@@ -1,0 +1,19 @@
+# CMake / Visual Studio build outputs
+build/
+CMakeCache.txt
+cmake_install.cmake
+*.sln
+*.vcxproj
+*.vcxproj.filters
+*.slnx
+*.user
+*.pdb
+*.ilk
+*.exp
+*.lib
+*.aps
+*.ncb
+*.sdf
+*.opensdf
+*.VC.db
+.vs/

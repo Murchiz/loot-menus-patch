@@ -1,0 +1,4 @@
+LIBRARY "LootMenuKarmaPatch"
+EXPORTS
+	FOSEPlugin_Query
+	FOSEPlugin_Load
