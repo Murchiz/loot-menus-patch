@@ -1,0 +1,62 @@
+name: Release Mod
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout Mod Repository
+        uses: actions/checkout@v6
+
+      - name: Checkout Stewie Tweaks Mirror
+        uses: actions/checkout@v6
+        with:
+          repository: Murchiz/lStewieAl-s-Tweaks-mirror
+          path: stewei_tweaks_src
+
+      - name: Move Dependency to Parent Directory
+        shell: pwsh
+        run: |
+          Move-Item -Path stewei_tweaks_src -Destination ..
+
+      - name: Configure CMake
+        run: |
+          cmake -A Win32 -B build
+
+      - name: Build Mod
+        run: |
+          cmake --build build --config Release
+
+      - name: Prepare Package
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path "package/Data/FOSE/Plugins"
+          Copy-Item "build/Release/LootMenuKarmaPatch.dll" -Destination "package/Data/FOSE/Plugins/"
+          Compress-Archive -Path "package/Data" -DestinationPath "LootMenuKarmaPatch.zip"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v3
+        with:
+          files: LootMenuKarmaPatch.zip
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload to Nexus Mods
+        uses: Nexus-Mods/upload-action@v1.0.0-beta.7
+        if: ${{ secrets.NEXUSMODS_API_KEY != '' && secrets.NEXUSMODS_FILE_GROUP_ID != '' }}
+        with:
+          api_key: ${{ secrets.NEXUSMODS_API_KEY }}
+          file_group_id: ${{ secrets.NEXUSMODS_FILE_GROUP_ID }}
+          filename: LootMenuKarmaPatch.zip
+          version: ${{ github.ref_name }}
+          file_category: main
+          archive_existing_file: true

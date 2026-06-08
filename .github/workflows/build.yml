@@ -1,0 +1,34 @@
+name: Build Plugin
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout Mod Repository
+      uses: actions/checkout@v6
+
+    - name: Checkout Stewie Tweaks Mirror
+      uses: actions/checkout@v6
+      with:
+        repository: Murchiz/lStewieAl-s-Tweaks-mirror
+        path: stewei_tweaks_src
+
+    - name: Move Dependency to Parent Directory
+      shell: pwsh
+      run: |
+        Move-Item -Path stewei_tweaks_src -Destination ..
+
+    - name: Configure CMake
+      run: |
+        cmake -A Win32 -B build
+
+    - name: Build Mod
+      run: |
+        cmake --build build --config Release
