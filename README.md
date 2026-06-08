@@ -15,6 +15,9 @@ Instead of modifying Loot Menu's source files directly and requiring users to re
 - It patches the buggy `AlchemyItem` type-cast in `GetItemValue()`, forcefully routing the logic to the reliable `DYNAMIC_CAST` fallback.
 - It scans for the `value > 0` conditional jump instructions right before the `SendCrimeEvent` calls and `NOP`s them out. This forces the crime event to accurately fire for every stolen item, matching vanilla Fallout 3 behavior.
 
+## Support for LootMenuUpdated
+This patch has been upgraded to provide **universal support** for both the original Loot Menu mod and the unofficial update `LootMenuUpdated`. It intelligently scans the loaded `F3LootMenu.dll` for both classic (MSVC 2013) and modern (MSVC 2022) assembly instruction patterns. It will seamlessly detect which version of the mod you are using and apply the correct memory patches without requiring separate configurations or downloads.
+
 ## Installation
 Drop the compiled `LootMenuKarmaPatch.dll` into your Fallout 3 installation folder under:
 `Data/FOSE/Plugins/`

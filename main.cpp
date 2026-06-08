@@ -14,19 +14,17 @@ void PatchLootMenuMemory()
     UInt8* base = (UInt8*)modInfo.lpBaseOfDll;
     UInt32 size = modInfo.SizeOfImage;
 
-    // 1. Patch GetItemValue (AlchemyItem cast issue)
-    for (UInt32 i = 0; i < size - 10; i++)
+    // 1. Patch GetItemValue (AlchemyItem cast issue) - Universal support for both classic and modern MSVC
+    for (UInt32 i = 0; i < size - 15; i++)
     {
+        // MSVC Classic Pattern (Original F3LootMenu): cmp byte ptr [reg+4], 2F
         if (base[i] == 0x80 && base[i+2] == 0x04 && base[i+3] == 0x2F)
         {
             UInt8 regByte = base[i+1];
-            if (regByte == 0x78 || regByte == 0x79 || regByte == 0x7A || 
-                regByte == 0x7B || regByte == 0x7E || regByte == 0x7F)
+            if ((regByte >= 0x78 && regByte <= 0x7B) || regByte == 0x7E || regByte == 0x7F)
             {
                 if (base[i+4] == 0x75)
-                {
                     SafeWrite8((UInt32)&base[i+4], 0xEB);
-                }
                 else if (base[i+4] == 0x0F && base[i+5] == 0x85)
                 {
                     SafeWrite8((UInt32)&base[i+4], 0xE9);
@@ -36,6 +34,21 @@ void PatchLootMenuMemory()
                     SafeWrite8((UInt32)&base[i+8], base[i+9]);
                     SafeWrite8((UInt32)&base[i+9], 0x90);
                 }
+            }
+        }
+        // MSVC Modern Pattern (LootMenuUpdated v145+): movzx reg, byte ptr [reg+4] \ cmp reg, 2F
+        else if (base[i] == 0x0F && base[i+1] == 0xB6 && base[i+3] == 0x04 && base[i+4] == 0x83 && base[i+6] == 0x2F)
+        {
+            if (base[i+7] == 0x75)
+                SafeWrite8((UInt32)&base[i+7], 0xEB);
+            else if (base[i+7] == 0x0F && base[i+8] == 0x85)
+            {
+                SafeWrite8((UInt32)&base[i+7], 0xE9);
+                SafeWrite8((UInt32)&base[i+8], base[i+9]);
+                SafeWrite8((UInt32)&base[i+9], base[i+10]);
+                SafeWrite8((UInt32)&base[i+10], base[i+11]);
+                SafeWrite8((UInt32)&base[i+11], base[i+12]);
+                SafeWrite8((UInt32)&base[i+12], 0x90);
             }
         }
     }
