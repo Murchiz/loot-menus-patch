@@ -1,9 +1,17 @@
 name: Release Mod
 
 on:
-  push:
-    tags:
-      - "v*"
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version (e.g. 1.0.0)'
+        required: true
+        type: string
+      publish_to_nexus:
+        description: 'Publish to Nexus Mods'
+        required: false
+        type: boolean
+        default: true
 
 permissions:
   contents: write
@@ -45,6 +53,8 @@ jobs:
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v3
         with:
+          tag_name: v${{ inputs.version }}
+          name: v${{ inputs.version }}
           files: LootMenuKarmaPatch.zip
           generate_release_notes: true
         env:
@@ -52,11 +62,11 @@ jobs:
 
       - name: Upload to Nexus Mods
         uses: Nexus-Mods/upload-action@v1.0.0-beta.7
-        if: ${{ secrets.NEXUSMODS_API_KEY != '' && secrets.NEXUSMODS_FILE_GROUP_ID != '' }}
+        if: ${{ inputs.publish_to_nexus && secrets.NEXUSMODS_API_KEY != '' && secrets.NEXUSMODS_FILE_GROUP_ID != '' }}
         with:
           api_key: ${{ secrets.NEXUSMODS_API_KEY }}
           file_group_id: ${{ secrets.NEXUSMODS_FILE_GROUP_ID }}
           filename: LootMenuKarmaPatch.zip
-          version: ${{ github.ref_name }}
+          version: ${{ inputs.version }}
           file_category: main
           archive_existing_file: true
